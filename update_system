@@ -1,0 +1,72 @@
+#!/bin/bash
+
+source /home/bhaskar/colors.sh
+TM="/usr/bin/time -f"
+NOCOLOR="\033[m"
+printf "Hostname: %s\nDate    : %s\nUptime  :%s\n\n"  "$(hostname -s)" "$(date)" "$(uptime)"
+
+printf "${Bright}${Yellow} Checking the root space ${NOCOLOR} ...\n\n\n\n\n"
+
+maxpoint="90"
+per=`df / | awk 'END{print $5}' | tr -d %`
+if  [ "$per" -le  "$maxpoint" ]; then
+
+printf "${Bright}${Green}Ok...looks good...procced ${NOCOLOR} \n\n\n"
+
+elif [ "$per" -gt "$maxpoint" ]; then
+
+printf "${Bright}${Red}Not enough space...aborting! ${NOCOLOR} \n\n\n\n"
+exit 1
+fi
+
+printf "\n\n ${Reverse} ################ Updating the system....have patience ################# ${NOCOLOR} \n\n"
+
+
+printf "\n\n\n\n ${Bright}${LimeYellow} Finding how much time will take to update/upgrade all the packages ${NOCOLOR}...\n\n\n\n\n"
+
+ emerge --pretend  --verbose --newuse --changed-use --deep --with-bdeps=y --update --tree @world | genlop -p
+
+if [[ $? != 0 ]];then
+   printf "${Bright}${Red}FAILED ${NOCOLOR} \n\n\n"
+else
+   printf "${Bright}${Green}PASSED ${NOCOLOR}\n\n\n"
+fi
+
+printf "${Bright}${PowderBlue} Here we go....have patience ${NOCOLOR} \n\n"
+
+update="USE="-systemd" emerge --verbose --newuse --changed-use --with-bdeps=y --deep --keep-going --update --tree --verbose-conflicts --autounmask-backtrack=y --exclude=firefox --exclude=libreoffice --exclude=mdds --exclude=postfix --exclude=openssl  @world"
+
+eval $update
+
+#$TM "\t\n\n Elapsed Time: %E \n\n"  "$!"
+
+if [[ $? == 0 ]] ;then
+ 
+  printf "\n\n ${Bright}${Green} Done ${NOCOLOR} \n"
+else
+  printf " ${Bright}${Red} Failed ${NOCOLOR} \n"
+fi
+
+printf "${Bright}${Cyan} Get rid of the obsolete stuff ...wait ${NOCOLOR} \n\n"
+
+$TM "\t\n\n Elapsed Time : %E \n\n" emerge --depclean
+
+if [[ $? == 0 ]] ;then
+
+  printf "\n\n ${Bright}${Green} Done ${NOCOLOR} \n"
+else
+    printf " ${Bright}${Red} Failed ${NOCOLOR} \n"
+fi
+
+printf "${Bright}${Magenta} We need to rebuild what is preservered with liabraries ....wait ${NOCOLOR} \n\n"
+
+$TM "\t\n\n Elapsed Time : %E \n\n" emerge @preserved-rebuild 
+
+if [[ $? == 0 ]] ;then
+
+  printf "\n\n ${Bright}${Green} Done ${NOCOLOR} \n"
+else
+    printf " ${Bright}${Red} Failed ${NOCOLOR} \n"
+fi
+
+exit 0

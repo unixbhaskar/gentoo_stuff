@@ -1,0 +1,62 @@
+#!/bin/bash
+
+source /home/bhaskar/colors.sh
+
+NOCOLOR="\033[0m"
+
+function remove_kernel(){
+
+rm -If vmlinuz-$kernel_version-GentooLinux System.map-$kernel_version-GentooLinux config-$kernel_version-GentooLinux
+
+}
+printf "\n\n\n${Bright}${Blue} Enlist the installed kernels${NOCOLOR} \n\n\n"
+
+cd /boot
+
+ ls -1 vmlinuz-*   
+
+printf "\n\n ${Bright}${LimeYellow} Well, we need to purge some kernel to accomodate some space.${NOCOLOR}\n\n\n"
+
+
+printf "${Bright}${Red}Please give the kernel version to remove${NOCOLOR}: %s" 
+read kernel_version
+
+remove_kernel 
+
+printf "\n\n ${Bright}${Magenta} Remove associated modules too ... ${NOCOLOR} \n\n"
+
+cd /lib/modules/
+
+pwd
+
+printf "\n\n\n${Bright}${Blue} Enlist the installed modules${NOCOLOR} \n\n\n"
+
+
+ ls -1 
+
+printf "${Bright}${Red}Please give the full modules directory name to remove${NOCOLOR}: %s"
+read modules_version
+
+rm -rf $modules_version
+
+printf "\n\n ${Bright}${Green} Done ${NOCOLOR} \n\n"
+
+printf "\n\n ${Bright}${Cyan}Want to remove another?[Yn] ${NOCOLOR} : %s"
+read response                                                                                                                                        
+
+
+if [[ $response == "Y" ]]; then
+
+ printf "\n\n ${Bright}${Magenta} Give another version no ${NOCOLOR} ..\n\n"
+ printf "${Bright}${Red}Please give another version to remove ${NOCOLOR}: %s" 
+ read kernel_version
+
+remove_kernel 
+
+elif [[ $response == "n" ]]; then
+
+     printf "\n\n ${Bright}${Yellow} Alright, no more. ${NOCOLOR} \n\n"
+
+       fi
+
+exit 0 

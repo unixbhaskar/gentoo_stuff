@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+
+ EIX_LIMIT_COMPACT=0 eix --world -c

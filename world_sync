@@ -1,0 +1,73 @@
+#!/bin/bash
+
+#This script is license under GPLv.2 ,use it as per the license policy.
+#Author : Bhaskar Chowdhury
+#SUMMERY : This script will sync with gentoo mirrors and update your local system .And also do some other system related checks too.
+
+
+#mail -s "update status" root@GentooLinux.localdomain <<UPDATE_SYSTEM
+#use=USE=\""-systemd"\"
+
+source /home/bhaskar/colors.sh
+NOCOLOR="\033[0m"
+TM="/usr/bin/time -f"
+printf "Hostname: %s\nDate    : %s\nUptime  :%s\n\n"  "$(hostname -s)" "$(date)" "$(uptime)"
+
+
+printf "${Reverse} Going to sync with the gentoo mirrors out in the internet ${NCCOLOR}...\n\n\n\n\n\n"
+$TM "\t\n\n Elapsed Time : %E \n\n" eix-sync
+
+
+printf "\n\n\n\ ${Bright}${PowderBlue} Checking system packages  ${NOCOLOR} ....\n\n\n"
+$TM  "\t\n\n Elapsed Time : %E \n\n" equery list "*" 
+sleep 5
+
+
+printf "\n\n\n\n ${Bright}${Cyan}Rebuilds package that depend on an recently updated library ${NOCOLOR}....\n\n\n\n\ "
+
+$TM  "\t\n\n Elapsed Time: %E \n\n" revdep-rebuild
+
+
+if [[ $? != 0 ]];then
+   printf "${Bright}${Red}FAILED ${NOCOLOR} \n\n\n"
+else
+   printf "${Bright}${Green}PASSED ${NOCOLOR} \n\n\n"
+fi
+
+
+
+printf "\n\n\n ${Bright}${Magenta}Last merged packaged history ${NOCLOR} ... \n\n"
+
+$TM "\t\n\n\n Elapsed Time : %E \n\n"  genlop -l | tail -n 50
+
+if [[ $? != 0 ]];then
+   printf "${Bright}${Red}FAILED ${NOCOLOR} \n\n\n"
+else
+   printf "${bright}${Green}PASSED ${NOCOLOR} \n\n\n"
+fi
+
+sleep 5
+
+printf "\n\n\n ${Bright}${Cyan}Verify and Update missing files in install packages ${NOCOLOR}....\n\n"
+
+$TM  "\t\n\n Elapsed Time: %E \n\n"  qcheck -uv `equery list "*"`
+
+
+if [[ $? != 0 ]];then
+   printf "${Bright}${Red}FAILED ${NOCLOR} \n\n\n"
+else
+   printf "${Bright}${Green}PASSED ${NOCOLOR} \n\n\n"
+fi
+
+
+printf "\n\n\n\n ${Bright}${Blue}Check the security hole in the system ${NOCLOR} ...."
+
+$TM  "\t\n\n Elapsed Time: %E \n\n"  glsa-check -l all
+
+sleep 5
+
+$TM  "\t\n\n Elapsed Time: %E \n\n"  glsa-check -f all
+
+
+printf "${Bright}${Yellow}PLease check the logs for failures..so you can fix them manually now :( ${NOCLOLOR} \n\n\n"
+#UPDATE_SYSTEM
